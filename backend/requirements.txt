@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+python-jose[cryptography]
+jsonschema
+asyncio-nats-client
+sqlalchemy[asyncio]
+psycopg2-binary
+alembic
+python-multipart
+httpx
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi
+prometheus-client

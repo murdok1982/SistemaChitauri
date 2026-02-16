@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Universal Event Envelope (UEE) v1",
+  "type": "object",
+  "required": [
+    "event_id",
+    "schema_version",
+    "event_type",
+    "asset_id",
+    "ts",
+    "geo",
+    "classification_level",
+    "confidence_score",
+    "source",
+    "payload",
+    "signature"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "format": "uuid" },
+    "schema_version": { "type": "string", "const": "1.0" },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "asset_heartbeat",
+        "asset_status_change",
+        "manual_observation",
+        "vehicle_telemetry_sample",
+        "drone_frame_batch",
+        "satellite_product_ingest",
+        "rf_anomaly_event",
+        "cyber_defense_alert"
+      ]
+    },
+    "asset_id": { "type": "string" },
+    "ts": { "type": "string", "format": "date-time" },
+    "geo": {
+      "type": "object",
+      "required": ["lat", "lon", "accuracy_m"],
+      "properties": {
+        "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+        "lon": { "type": "number", "minimum": -180, "maximum": 180 },
+        "alt": { "type": ["number", "null"] },
+        "accuracy_m": { "type": "number", "minimum": 0 }
+      }
+    },
+    "classification_level": {
+      "type": "string",
+      "enum": ["OPEN", "RESTRICTED", "CONFIDENTIAL", "SECRET"]
+    },
+    "confidence_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "source": {
+      "type": "object",
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["ANDROID", "VEHICLE_GATEWAY", "DRONE_GATEWAY", "SAT_PRODUCT", "RF_SENSOR", "CYBER_FEED"]
+        },
+        "id": { "type": "string" }
+      }
+    },
+    "payload": { "type": "object" },
+    "signature": {
+      "type": "object",
+      "required": ["alg", "kid", "sig"],
+      "properties": {
+        "alg": { "type": "string" },
+        "kid": { "type": "string" },
+        "sig": { "type": "string" }
+      }
+    }
+  }
+}

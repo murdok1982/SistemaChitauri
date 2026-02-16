@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # 1. Messaging Bus
+  nats:
+    image: nats:2.10-alpine
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command: "-js"
+
+  # 2. Database (PostGIS + TimescaleDB)
+  # Using a combined image or separate. Here we use timescaledb-postgis.
+  db:
+    image: timescale/timescaledb-postgis:latest-pg14
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: sesis
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./backend/migrations/schema_design.sql:/docker-entrypoint-initdb.d/1-schema.sql
+
+  # 3. Object Storage
+  minio:
+    image: minio/minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  # 4. Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://user:pass@db:5432/sesis
+      NATS_URL: nats://nats:4222
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - nats
+
+  # 5. ML Worker
+  ml-worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: python -m backend.workers.ml_worker
+    depends_on:
+      - db
+      - nats
+
+  # 6. Web Dashboard
+  ui:
+    image: nginx:alpine
+    volumes:
+      - ./ui:/usr/share/nginx/html
+    ports:
+      - "80:80"
