@@ -4,78 +4,149 @@
 
 ---
 
-## 🛰️ Visión General
-**SESIS** (Soberano UE, Coalition-ready, Defensivo) es una plataforma multi-agente de nueva generación diseñada para el dominio de la información en teatros de operaciones complejos. Permite la integración de sensores en tiempo real, análisis de inteligencia artificial en el borde (Edge AI) y una visualización táctica unificada.
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Active%20Deployment-success?style=for-the-badge&logo=shield" alt="Status">
+  <img src="https://img.shields.io/badge/Security-Zero%20Trust-red?style=for-the-badge&logo=lock" alt="Zero Trust">
+  <img src="https://img.shields.io/badge/AI-Ares%20Cognitive%20Engine-blue?style=for-the-badge&logo=openai" alt="AI Agent">
+  <img src="https://img.shields.io/badge/Architecture-Event%20Driven-purple?style=for-the-badge&logo=apachekafka" alt="Architecture">
+</p>
 
-### 💎 Capacidades Core
-- **Mecanismo de Ingesta Soberana**: Protocolo **UEE v1** (Universal Event Envelope) con firma criptográfica obligatoria.
-- **Cognición Situacional**: Detección de anomalías por IA y correlación multi-dominio (RF + Geo + CV).
-- **Control de Acceso ABAC**: Autorización granular basada en atributos (Sujeto, Recurso, Contexto de Misión).
-- **Arquitectura Inmune**: Basada en mTLS y buses de datos endurecidos (NATS JetStream).
+## 🛰️ Visión General y Nuevas Capacidades
+
+**SESIS** (Soberano UE, Coalition-ready, Defensivo) es una plataforma multi-agente militar de nueva generación diseñada para el dominio de la información en teatros de operaciones multidominio. 
+
+Con los últimos avances, se ha implementado la orquestación avanzada de activos combinada con modelos de IA generativa (Ollama/AresChat), módulos de fusión de inteligencia (Intel Fusion) e interfaces tácticas completas en React.
+
+### 💎 Pilares Cognitivos
+- **Ares LLM (Military Brain)**: Agente de IA para evaluación de amenazas y orquestación de la interfaz de mando y control (C2).
+- **Intel Fusion Engine**: Componente de backend para la amalgama de información multi-sensor, correlacionando telemetría de activos y datos OSINT en tiempo real.
+- **Visualización Táctica (Vite+React)**: Dashboard reactivo, mapas tácticos asíncronos y sistema unificado de tickers de inteligencia crítica.
+- **Control Vectorial de Anomalías**: Worker integrado de ML que audita continuamente el histórico C3I (Command, Control, Communications, and Intelligence).
 
 ---
 
-## 📊 Arquitectura del Sistema
+## 🗺️ Mapa Simulado: Orquestación de Activos Tácticos en el Campo
+
+El siguiente diagrama representa de manera técnica e interactiva cómo SESIS coordina a los distintos activos heterogéneos desplegados en un teatro operativo asimétrico, y cómo la información viaja de regreso al núcleo de inteligencia (Ares).
 
 ```mermaid
-graph TD
-    subgraph "Nivel Táctico (Edge)"
-        DS[Drones/Sensores] --> | Firma Cryptográfica | SDK[SESIS Edge SDK]
-        SDK --> | UEE over TLS | ING[Ingestión Backend]
-    end
+flowchart TD
+    %% Estilos Globales
+    classDef C2 fill:#111827,stroke:#3b82f6,stroke-width:3px,color:#fff,shape:rect,rx:10,ry:10;
+    classDef drone fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#fff,rx:5,ry:5;
+    classDef squad fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#fff,rx:5,ry:5;
+    classDef sat fill:#1e3a8a,stroke:#60a5fa,stroke-width:2px,color:#fff,rx:5,ry:5;
+    classDef ai fill:#312e81,stroke:#8b5cf6,stroke-width:2px,color:#fff,rx:5,ry:5;
+
+    %% Nodos Core
+    C2Centro["🛡️ SESIS Command & Control<br/>Cerebro Militar (Ares)"]:::C2
     
-    subgraph "Nivel Inteligencia (Core)"
-        ING --> | JetStream | BUS((NATS))
-        BUS --> ML[ML Worker: Anomalías & Correlación]
-        BUS --> VIS[Vision AI: Detección de Cambios]
-        ML --> DB[(PostGIS + TimescaleDB)]
-        VIS --> DB
+    %% Teatro de Operaciones
+    subgraph Teatro_de_Operaciones ["🎯 Teatro de Operaciones Táctico"]
+        direction LR
+        SQUAD_A["🐺 Foxtrot Unit<br/>(Incursión Táctica)"]:::squad
+        UAV_1[("🛩️ MQ-9 Reaper<br/>(SIGINT / ISTAR)")]:::drone
+        UAV_2[("🚁 Swarm Drones<br/>(Vigilancia Perimetral)")]:::drone
+        SAT_1["🛰️ Satélite Óptico<br/>(Cobertura GEO)"]:::sat
     end
-    
-    subgraph "Nivel Operativo (Command)"
-        UI[Dashboard Táctico] <--> | WebSocket/API | ING
-        UI --> | ABAC Policy | POL[Policy Evaluator]
+
+    %% Edge
+    subgraph Edge_Processing ["⚡ Borde / Edge"]
+        EDGE_AI["🧠 Nodo Edge AI<br/>Filtrado y Detección Temprana"]:::ai
     end
+
+    %% Enlaces Sensoriales
+    UAV_1 -- "Video Feed / Radar" --> EDGE_AI
+    UAV_2 -- "Telemetría Térmica" --> EDGE_AI
+    SQUAD_A -. "Señales Biométricas" .-> EDGE_AI
+    SAT_1 -- "Imágenes Alta Res." --> EDGE_AI
     
-    style ING fill:#1e293b,stroke:#0ea5e9,color:#fff
-    style BUS fill:#0c4a6e,stroke:#38bdf8,color:#fff
-    style DB fill:#1e1b4b,stroke:#818cf8,color:#fff
-    style ML fill:#701a75,stroke:#d946ef,color:#fff
+    EDGE_AI == "Fusión de Sensores (UEE/mTLS)" === C2Centro
+    
+    %% Enlaces de Comando (C2)
+    C2Centro == "Órdenes / Waypoints" ===> UAV_1
+    C2Centro == "Coordenadas de Extracción" ===> SQUAD_A
 ```
 
 ---
 
-## 🚀 Despliegue Rápido (Entorno de Operaciones)
+## 📊 Arquitectura del Sistema End-to-End
 
-SESIS está diseñado para ser desplegado en infraestructuras locales soberanas mediante contenedores endurecidos.
+```mermaid
+graph TB
+    subgraph "Interfaz Táctica de Mando (Frontend UI)"
+        DASH[🖥️ React Dashboard]
+        MAP[🗺️ Geo-Tactical Map]
+        CHAT[💬 Ares AI Chat]
+        DASH --- MAP & CHAT
+    end
+    
+    subgraph "Core Militar (Backend Python)"
+        API[⚡ API Gateway Router]
+        FUSION[🧩 Intel Fusion Engine]
+        ARES_BRAIN[🧠 Military Brain (Ares LLM)]
+        
+        API --- FUSION & ARES_BRAIN
+    end
+    
+    subgraph "Memoria y Base de Inteligencia"
+        BUS((🚀 NATS JetStream))
+        ML[⚙️ ML Worker (Cálculo de Amenazas)]
+        PG[(🐘 PostGIS DB)]
+    end
+    
+    DASH <-->|WebSocket / REST| API
+    FUSION -->|Publicación de Eventos| BUS
+    BUS <-->|Detección de Anomalías| ML
+    ML -->|Persistencia Histórica| PG
+    ARES_BRAIN -->|Consultas Semánticas| PG
+    
+    style DASH fill:#1f2937,stroke:#3b82f6,color:#e5e7eb
+    style MAP fill:#1f2937,stroke:#3b82f6,color:#e5e7eb
+    style CHAT fill:#1f2937,stroke:#3b82f6,color:#e5e7eb
+    style API fill:#111827,stroke:#10b981,color:#fff
+    style ARES_BRAIN fill:#4c1d95,stroke:#8b5cf6,color:#e5e7eb
+    style ML fill:#7c2d12,stroke:#f97316,color:#fff
+```
+
+---
+
+## 🛠️ Stack Tecnológico Actualizado
+
+| Módulo | Tecnología Implementada | Propósito Crítico |
+| :--- | :--- | :--- |
+| **Frontend UI** | React 18, Vite, CSS Grid puro | Renderización inmediata. Bajo consumo y ultra respuesta. |
+| **Backend Core** | Python, FastAPI, Motor Asíncrono | Toma de decisiones y enrutamiento con latencia inferior a 30ms. |
+| **IA & Cerebro** | Ollama (Local LLM), ML Workers | "Ares", análisis predictivo totalmente *air-gapped* sin conexión externa. |
+| **Ingesta Sensorial**| Protocolo UEE, NATS JetStream | Resiliencia garantizada en zonas de negación electrónica. |
+| **Almacenamiento** | PostGIS & TimescaleDB | Memoria táctico-espacial a prueba de desconexiones. |
+
+---
+
+## 🚀 Despliegue Rápido (Entorno de Comando)
+
+SESIS sigue operando basado en contenedores para infraestructura *bare-metal* desconectada de la red pública.
 
 ```bash
-# Sincronización de secretos y despliegue del stack
+# 1. Asegurar el aprovisionamiento de modelos LLM tácticos
+./scripts/init_ollama.sh
+
+# 2. Desplegar el stack completo de fusión e interfaz táctica
 docker-compose up -d --build
 ```
 
-### Servicios Activos:
-- **Command Engine**: Port 8000 (FastAPI)
-- **Tactical UI**: Port 3000 (React / Nginx)
-- **Intelligence Bus**: Port 4222 (NATS)
-- **Tactical Storage**: Port 5432 (PostgreSQL/Timescale)
+### Rutas Activas del Centro de Comando:
+- **Dashboard Táctico (React UI)**: `http://localhost (Port 80/3000)`
+- **Ares API / Core**: `http://localhost:8000/docs`
+- **NATS Intelligence Bus**: `Port 4222`
+- **Almacén Táctico (PostgreSQL)**: `Port 5432`
 
 ---
 
-## 🛠️ Stack Tecnológico Militar
-| Componente | Tecnología | Propósito |
-| :--- | :--- | :--- |
-| **Backend** | Python / FastAPI (Async) | Orquestación de datos de misión |
-| **Edge SDK** | Kotlin | Integración nativa con assets tácticos |
-| **IA/ML** | PyTorch / NumPy | Detección de amenazas y Vision AI |
-| **Database** | PostGIS / TimescaleDB | Memoria táctica espacial y temporal |
-| **Bus** | NATS JetStream | Comunicación multi-agente persistente |
-| **Seguridad** | JWS / mTLS | Integridad y confidencialidad absoluta |
+## 🔒 Postura de Seguridad e Inmutabilidad
+
+Cada evento en la plataforma (movimientos de unidades, alertas procesadas, proyecciones de riesgo generadas por IA) forma parte de una **Matriz de Cripto-Auditoría**. Los *workers* analizan los datos bajo un esquema **Zero-Trust** asegurando que la información de fusión de inteligencia nunca sea manipulada ni corrompida.
 
 ---
 
-## 🔒 Auditoría y Seguridad
-Cada acción realizada en SESIS genera una entrada en el **Append-only Audit Trail**, asegurando una trazabilidad total del operador y del sistema. Nadie puede borrar su rastro.
-
----
-© 2026. Todos los derechos reservados por el Autor. **Clasificación: CONFIDENCIAL**.
+© 2026. Todos los derechos reservados por el Autor. **Clasificación: CONFIDENCIAL MAJESTIC / NOFORN**.
