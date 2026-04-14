@@ -1,16 +1,20 @@
 version: '3.8'
 
 services:
-  # 1. Messaging Bus
+  # -------------------------------------------------------------------------
+  # 1. Messaging Bus — NATS JetStream
+  # -------------------------------------------------------------------------
   nats:
     image: nats:2.10-alpine
     ports:
       - "4222:4222"
       - "8222:8222"
     command: "-js"
+    restart: unless-stopped
 
-  # 2. Database (PostGIS + TimescaleDB)
-  # Using a combined image or separate. Here we use timescaledb-postgis.
+  # -------------------------------------------------------------------------
+  # 2. Database — PostgreSQL 14 + PostGIS + TimescaleDB
+  # -------------------------------------------------------------------------
   db:
     image: timescale/timescaledb-postgis:latest-pg14
     environment:
@@ -20,11 +24,21 @@ services:
     ports:
       - "5432:5432"
     volumes:
+      - pg_data:/var/lib/postgresql/data
       - ./backend/migrations/schema_design.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./backend/migrations/002_intel_products.sql:/docker-entrypoint-initdb.d/2-intel.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d sesis"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # 3. Object Storage
+  # -------------------------------------------------------------------------
+  # 3. Object Storage — MinIO (S3-compatible)
+  # -------------------------------------------------------------------------
   minio:
-    image: minio/minio
+    image: minio/minio:latest
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
@@ -32,8 +46,70 @@ services:
     ports:
       - "9000:9000"
       - "9001:9001"
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
 
-  # 4. Backend API
+  # -------------------------------------------------------------------------
+  # 4. Cache — Redis 7
+  # -------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # -------------------------------------------------------------------------
+  # 5. ARES LLM Brain — Ollama (local inference)
+  # -------------------------------------------------------------------------
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+      - OLLAMA_NUM_PARALLEL=2
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    # GPU support — descomenta si tienes NVIDIA con nvidia-container-toolkit
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  # -------------------------------------------------------------------------
+  # 6. Ollama model initializer — descarga el modelo ARES al arrancar
+  # -------------------------------------------------------------------------
+  ollama-init:
+    image: curlimages/curl:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - ./scripts/init_ollama.sh:/init_ollama.sh
+    entrypoint: ["sh", "/init_ollama.sh"]
+    restart: "no"
+
+  # -------------------------------------------------------------------------
+  # 7. Backend API — FastAPI + ARES Brain
+  # -------------------------------------------------------------------------
   backend:
     build:
       context: .
@@ -41,26 +117,70 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://user:pass@db:5432/sesis
       NATS_URL: nats://nats:4222
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: mistral:7b
+      REDIS_URL: redis://redis:6379/0
+      MINIO_URL: http://minio:9000
+      ALLOWED_ORIGINS: '["http://localhost:3000","http://localhost:80","http://localhost"]'
+      ENVIRONMENT: development
+      # Añade operadores con clearance: OPERATOR_API_KEYS='{"key123":{"name":"OPERATOR_01","roles":["ANALYST"],"clearance":"CONFIDENTIAL"}}'
+      OPERATOR_API_KEYS: '{"dev-key-confidential":{"name":"DEV_OPERATOR","roles":["ANALYST","OFFENSIVE_OPERATOR"],"clearance":"SECRET"}}'
     ports:
       - "8000:8000"
     depends_on:
-      - db
-      - nats
+      db:
+        condition: service_healthy
+      nats:
+        condition: service_started
+      ollama:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
 
-  # 5. ML Worker
+  # -------------------------------------------------------------------------
+  # 8. ML Worker — Anomaly detection + intelligence fusion
+  # -------------------------------------------------------------------------
   ml-worker:
     build:
       context: .
       dockerfile: backend/Dockerfile
     command: python -m backend.workers.ml_worker
+    environment:
+      DATABASE_URL: postgresql+asyncpg://user:pass@db:5432/sesis
+      NATS_URL: nats://nats:4222
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: mistral:7b
+      REDIS_URL: redis://redis:6379/0
     depends_on:
-      - db
-      - nats
+      db:
+        condition: service_healthy
+      nats:
+        condition: service_started
+      ollama:
+        condition: service_healthy
+    restart: unless-stopped
 
-  # 6. Web Dashboard
+  # -------------------------------------------------------------------------
+  # 9. Web Dashboard — React Command Center (Vite build + nginx)
+  # -------------------------------------------------------------------------
   ui:
-    image: nginx:alpine
-    volumes:
-      - ./ui:/usr/share/nginx/html
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
     ports:
       - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pg_data:
+  minio_data:
+  redis_data:
+  ollama_data:

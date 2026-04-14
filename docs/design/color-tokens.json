@@ -1,0 +1,174 @@
+{
+  "colors": {
+    "bg": {
+      "base":    "#0a0d0f",
+      "panel":   "#0d1117",
+      "card":    "#1a2332",
+      "sidebar": "#0f1923",
+      "overlay": "rgba(10,13,15,0.85)",
+      "glass":   "rgba(13,17,23,0.72)"
+    },
+    "primary": {
+      "green":        "#00ff41",
+      "greenDim":     "rgba(0,255,65,0.15)",
+      "greenBorder":  "rgba(0,255,65,0.2)",
+      "greenHover":   "rgba(0,255,65,0.6)",
+      "greenGlow":    "rgba(0,255,65,0.5)"
+    },
+    "classification": {
+      "open":       "#00ff41",
+      "restricted": "#ffd700",
+      "confidential":"#ff6b35",
+      "secret":     "#ff0000",
+      "topSecret":  "#9400d3",
+      "topSecretBg":"rgba(148,0,211,0.15)"
+    },
+    "status": {
+      "active":   "#00ff41",
+      "degraded": "#ffd700",
+      "inactive": "#4b5563",
+      "dead":     "#374151",
+      "alert":    "#ff0000",
+      "selected": "#e0f2fe"
+    },
+    "severity": {
+      "critical": "#ff0000",
+      "high":     "#ff6b35",
+      "medium":   "#ffd700",
+      "low":      "#00ff41",
+      "info":     "#38bdf8"
+    },
+    "text": {
+      "primary":   "#e0e6ed",
+      "secondary": "#8899a6",
+      "accent":    "#00ff41",
+      "muted":     "#4b5563",
+      "inverse":   "#0a0d0f",
+      "danger":    "#ff0000",
+      "warning":   "#ffd700"
+    },
+    "border": {
+      "default": "rgba(0,255,65,0.2)",
+      "hover":   "rgba(0,255,65,0.6)",
+      "active":  "rgba(0,255,65,0.8)",
+      "panel":   "rgba(255,255,255,0.06)",
+      "danger":  "rgba(255,0,0,0.6)",
+      "warning": "rgba(255,215,0,0.5)"
+    },
+    "surface": {
+      "hover":    "rgba(0,255,65,0.05)",
+      "selected": "rgba(0,255,65,0.1)",
+      "danger":   "rgba(255,0,0,0.08)",
+      "warning":  "rgba(255,215,0,0.08)",
+      "topSecret":"rgba(148,0,211,0.1)"
+    }
+  },
+  "shadows": {
+    "glowGreen":    "0 0 8px rgba(0,255,65,0.5)",
+    "glowGreenLg":  "0 0 20px rgba(0,255,65,0.4), 0 0 40px rgba(0,255,65,0.15)",
+    "glowRed":      "0 0 8px rgba(255,0,0,0.6)",
+    "glowYellow":   "0 0 8px rgba(255,215,0,0.5)",
+    "glowPurple":   "0 0 12px rgba(148,0,211,0.6)",
+    "panel":        "0 4px 24px rgba(0,0,0,0.6)",
+    "card":         "0 2px 8px rgba(0,0,0,0.4)"
+  },
+  "typography": {
+    "fontData":    "'Courier New', 'Lucida Console', monospace",
+    "fontUI":      "'Arial Narrow', 'Roboto Condensed', 'Liberation Sans Narrow', sans-serif",
+    "fontHeading": "'Arial Narrow', 'Roboto Condensed', sans-serif",
+    "sizes": {
+      "label":    "11px",
+      "base":     "13px",
+      "body":     "13px",
+      "header":   "14px",
+      "headerLg": "16px",
+      "metric":   "24px",
+      "metricLg": "32px",
+      "title":    "20px"
+    },
+    "weights": {
+      "normal": 400,
+      "medium": 500,
+      "bold":   700
+    },
+    "letterSpacing": {
+      "military": "0.15em",
+      "wide":     "0.08em",
+      "normal":   "0.02em"
+    },
+    "transforms": {
+      "military": "uppercase"
+    }
+  },
+  "spacing": {
+    "xs":  "4px",
+    "sm":  "8px",
+    "md":  "12px",
+    "lg":  "16px",
+    "xl":  "24px",
+    "2xl": "32px",
+    "3xl": "48px"
+  },
+  "layout": {
+    "headerHeight":     "48px",
+    "tickerHeight":     "36px",
+    "sidebarWidth":     "280px",
+    "intelPanelWidth":  "340px",
+    "chatHeight":       "300px",
+    "borderRadius": {
+      "sm":  "4px",
+      "md":  "6px",
+      "lg":  "8px",
+      "xl":  "12px"
+    }
+  },
+  "animations": {
+    "pulseAlert": {
+      "duration":        "0.5s",
+      "timingFunction":  "ease-in-out",
+      "iterationCount":  "infinite",
+      "alternates":      true
+    },
+    "glowGreen": {
+      "duration":        "2s",
+      "timingFunction":  "ease-in-out",
+      "iterationCount":  "infinite",
+      "alternates":      true
+    },
+    "degradedBlink": {
+      "duration":        "2s",
+      "timingFunction":  "ease-in-out",
+      "iterationCount":  "infinite",
+      "alternates":      true
+    },
+    "rotateSlow": {
+      "duration":        "20s",
+      "timingFunction":  "linear",
+      "iterationCount":  "infinite"
+    },
+    "scanline": {
+      "duration":        "8s",
+      "timingFunction":  "linear",
+      "iterationCount":  "infinite"
+    },
+    "dataScroll": {
+      "duration":        "30s",
+      "timingFunction":  "linear",
+      "iterationCount":  "infinite"
+    },
+    "thinkingDots": {
+      "duration":        "1.4s",
+      "timingFunction":  "ease-in-out",
+      "iterationCount":  "infinite",
+      "staggerDelay":    "0.2s"
+    }
+  },
+  "zIndex": {
+    "base":    0,
+    "panel":   10,
+    "overlay": 50,
+    "modal":   100,
+    "toast":   200,
+    "ticker":  5
+  }
+}
