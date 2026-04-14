@@ -32,17 +32,17 @@ El siguiente diagrama representa de manera técnica e interactiva cómo SESIS co
 ```mermaid
 flowchart TD
     %% Estilos Globales
-    classDef C2 fill:#111827,stroke:#3b82f6,stroke-width:3px,color:#fff,shape:rect,rx:10,ry:10;
-    classDef drone fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#fff,rx:5,ry:5;
-    classDef squad fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#fff,rx:5,ry:5;
-    classDef sat fill:#1e3a8a,stroke:#60a5fa,stroke-width:2px,color:#fff,rx:5,ry:5;
-    classDef ai fill:#312e81,stroke:#8b5cf6,stroke-width:2px,color:#fff,rx:5,ry:5;
+    classDef C2 fill:#111827,stroke:#3b82f6,stroke-width:3px,color:#fff;
+    classDef drone fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#fff;
+    classDef squad fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#fff;
+    classDef sat fill:#1e3a8a,stroke:#60a5fa,stroke-width:2px,color:#fff;
+    classDef ai fill:#312e81,stroke:#8b5cf6,stroke-width:2px,color:#fff;
 
     %% Nodos Core
-    C2Centro["🛡️ SESIS Command & Control<br/>Cerebro Militar (Ares)"]:::C2
+    C2Centro["🛡️ SESIS Command and Control<br/>Cerebro Militar (Ares)"]:::C2
     
     %% Teatro de Operaciones
-    subgraph Teatro_de_Operaciones ["🎯 Teatro de Operaciones Táctico"]
+    subgraph Teatro_de_Operaciones["🎯 Teatro de Operaciones Táctico"]
         direction LR
         SQUAD_A["🐺 Foxtrot Unit<br/>(Incursión Táctica)"]:::squad
         UAV_1[("🛩️ MQ-9 Reaper<br/>(SIGINT / ISTAR)")]:::drone
@@ -51,7 +51,7 @@ flowchart TD
     end
 
     %% Edge
-    subgraph Edge_Processing ["⚡ Borde / Edge"]
+    subgraph Edge_Processing["⚡ Borde / Edge"]
         EDGE_AI["🧠 Nodo Edge AI<br/>Filtrado y Detección Temprana"]:::ai
     end
 
@@ -73,26 +73,26 @@ flowchart TD
 ## 📊 Arquitectura del Sistema End-to-End
 
 ```mermaid
-graph TB
-    subgraph "Interfaz Táctica de Mando (Frontend UI)"
-        DASH[🖥️ React Dashboard]
-        MAP[🗺️ Geo-Tactical Map]
-        CHAT[💬 Ares AI Chat]
+flowchart TB
+    subgraph Frontendui["Interfaz Táctica de Mando (Frontend UI)"]
+        DASH["🖥️ React Dashboard"]
+        MAP["🗺️ Geo-Tactical Map"]
+        CHAT["💬 Ares AI Chat"]
         DASH --- MAP & CHAT
     end
     
-    subgraph "Core Militar (Backend Python)"
-        API[⚡ API Gateway Router]
-        FUSION[🧩 Intel Fusion Engine]
-        ARES_BRAIN[🧠 Military Brain (Ares LLM)]
+    subgraph Backendpy["Core Militar (Backend Python)"]
+        API["⚡ API Gateway Router"]
+        FUSION["🧩 Intel Fusion Engine"]
+        ARES_BRAIN["🧠 Military Brain (Ares LLM)"]
         
         API --- FUSION & ARES_BRAIN
     end
     
-    subgraph "Memoria y Base de Inteligencia"
-        BUS((🚀 NATS JetStream))
-        ML[⚙️ ML Worker (Cálculo de Amenazas)]
-        PG[(🐘 PostGIS DB)]
+    subgraph Memoriaybase["Memoria y Base de Inteligencia"]
+        BUS(("🚀 NATS JetStream"))
+        ML["⚙️ ML Worker (Cálculo de Amenazas)"]
+        PG[("🐘 PostGIS DB")]
     end
     
     DASH <-->|WebSocket / REST| API
