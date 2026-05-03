@@ -1,6 +1,6 @@
 # 🛡️ SESIS: Sistema de Inteligencia y Conciencia Situacional Soberana
 
-> **⚠️ AVISO LEGAL CRÍTICO:** Este software es **PROPIEDAD PRIVADA EXCLUSIVA**. Desarrollado específicamente para Fuerzas Armadas y Agencias de Inteligencia. Su clonación, difusión, ingeniería inversa o uso no autorizado será perseguido mediante **ACCIONES JUDICIALES PENALES Y CIVILES** bajo las leyes de propiedad intelectual y seguridad nacional.
+> **⚠️ AVISO LEGAL CRÍTICO:** Este software es **PROPIEDAD PRIVADA EXCLUSIVA**. Desarrollado específicamente para Fuerzas Armadas y Agencias de Inteligencia de grado Estatal. Su clonación, difusión, ingeniería inversa o uso no autorizado será perseguido mediante **ACCIONES JUDICIALES PENALES Y CIVILES** bajo las leyes de propiedad intelectual y seguridad nacional. Clasificación: **TOP SECRET / NOFORN**.
 
 ---
 
@@ -11,61 +11,44 @@
   <img src="https://img.shields.io/badge/Architecture-Event%20Driven-purple?style=for-the-badge&logo=apachekafka" alt="Architecture">
 </p>
 
-## 🛰️ Visión General y Nuevas Capacidades
+![Command Center HUD](C:\Users\USUARIO\.gemini\antigravity\brain\295665f9-bdbf-4f90-a047-52512cd1ac9f\tactical_command_hud_1777830207285.png)
+
+## 🛰️ Visión General y Nuevas Capacidades (Fase de Endurecimiento)
 
 **SESIS** (Soberano UE, Coalition-ready, Defensivo) es una plataforma multi-agente militar de nueva generación diseñada para el dominio de la información en teatros de operaciones multidominio. 
 
-Con los últimos avances, se ha implementado la orquestación avanzada de activos combinada con modelos de IA generativa (Ollama/AresChat), módulos de fusión de inteligencia (Intel Fusion) e interfaces tácticas completas en React.
+Con los últimos avances en ciberdefensa y DevSecOps militar, el sistema ha sido recertificado bajo la doctrina **Zero-Trust**: mitigación completa de suplantación de identidad (Header Spoofing), bloqueo volumétrico de red anti-DDoS, inferencia de visión IA en memoria y cálculo cinemático anti-jamming GPS.
 
 ### 💎 Pilares Cognitivos
-- **Ares LLM (Military Brain)**: Agente de IA para evaluación de amenazas y orquestación de la interfaz de mando y control (C2).
+- **Ares LLM (Military Brain)**: Agente de IA para evaluación de amenazas y orquestación de la interfaz de mando y control (C2). Completamente air-gapped.
 - **Intel Fusion Engine**: Componente de backend para la amalgama de información multi-sensor, correlacionando telemetría de activos y datos OSINT en tiempo real.
 - **Visualización Táctica (Vite+React)**: Dashboard reactivo, mapas tácticos asíncronos y sistema unificado de tickers de inteligencia crítica.
-- **Control Vectorial de Anomalías**: Worker integrado de ML que audita continuamente el histórico C3I (Command, Control, Communications, and Intelligence).
+- **Control Vectorial de Anomalías**: Worker integrado de ML que audita continuamente el histórico C3I (Command, Control, Communications, and Intelligence) empleando Isolation Forests en background y heurísticas cinemáticas avanzadas.
 
 ---
 
-## 🗺️ Mapa Simulado: Orquestación de Activos Tácticos en el Campo
-
-El siguiente diagrama representa de manera técnica e interactiva cómo SESIS coordina a los distintos activos heterogéneos desplegados en un teatro operativo asimétrico, y cómo la información viaja de regreso al núcleo de inteligencia (Ares).
+## 🗺️ Mapa Mental Operativo (Doctrina de Mando)
 
 ```mermaid
-flowchart TD
-    %% Estilos Globales
-    classDef C2 fill:#111827,stroke:#3b82f6,stroke-width:3px,color:#fff;
-    classDef drone fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#fff;
-    classDef squad fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#fff;
-    classDef sat fill:#1e3a8a,stroke:#60a5fa,stroke-width:2px,color:#fff;
-    classDef ai fill:#312e81,stroke:#8b5cf6,stroke-width:2px,color:#fff;
-
-    %% Nodos Core
-    C2Centro["🛡️ SESIS Command and Control<br/>Cerebro Militar (Ares)"]:::C2
-    
-    %% Teatro de Operaciones
-    subgraph Teatro_de_Operaciones["🎯 Teatro de Operaciones Táctico"]
-        direction LR
-        SQUAD_A["🐺 Foxtrot Unit<br/>(Incursión Táctica)"]:::squad
-        UAV_1[("🛩️ MQ-9 Reaper<br/>(SIGINT / ISTAR)")]:::drone
-        UAV_2[("🚁 Swarm Drones<br/>(Vigilancia Perimetral)")]:::drone
-        SAT_1["🛰️ Satélite Óptico<br/>(Cobertura GEO)"]:::sat
-    end
-
-    %% Edge
-    subgraph Edge_Processing["⚡ Borde / Edge"]
-        EDGE_AI["🧠 Nodo Edge AI<br/>Filtrado y Detección Temprana"]:::ai
-    end
-
-    %% Enlaces Sensoriales
-    UAV_1 -- "Video Feed / Radar" --> EDGE_AI
-    UAV_2 -- "Telemetría Térmica" --> EDGE_AI
-    SQUAD_A -. "Señales Biométricas" .-> EDGE_AI
-    SAT_1 -- "Imágenes Alta Res." --> EDGE_AI
-    
-    EDGE_AI == "Fusión de Sensores (UEE/mTLS)" === C2Centro
-    
-    %% Enlaces de Comando (C2)
-    C2Centro == "Órdenes / Waypoints" ===> UAV_1
-    C2Centro == "Coordenadas de Extracción" ===> SQUAD_A
+mindmap
+  root((SESIS C4ISR))
+    Inteligencia Artificial
+      ARES LLM Brain
+      Vision IA (YOLOv8)
+      Isolation Forest (Anomalías)
+    Ciberseguridad Zero-Trust
+      mTLS estricto anti-spoofing
+      JWT con validación de emisor/audiencia
+      Escudo anti-DDoS volumétrico (10MB payload)
+      Sin credenciales embebidas (Fail-Safe)
+    Comunicaciones (C3)
+      NATS JetStream (Resiliencia EW)
+      FastAPI (Gateway Asíncrono)
+      PostGIS (Geo-Memoria persistente)
+    Visualización Reactiva
+      React 18 + Vite
+      Mapbox GL Táctico
+      Zustand (Gestión de estado atómico)
 ```
 
 ---
@@ -95,9 +78,9 @@ flowchart TB
         PG[("🐘 PostGIS DB")]
     end
     
-    DASH <-->|WebSocket / REST| API
+    DASH <-->|WebSocket / REST mTLS| API
     FUSION -->|Publicación de Eventos| BUS
-    BUS <-->|Detección de Anomalías| ML
+    BUS <-->|Detección de Anomalías Asíncrona| ML
     ML -->|Persistencia Histórica| PG
     ARES_BRAIN -->|Consultas Semánticas| PG
     
@@ -117,36 +100,43 @@ flowchart TB
 | :--- | :--- | :--- |
 | **Frontend UI** | React 18, Vite, CSS Grid puro | Renderización inmediata. Bajo consumo y ultra respuesta. |
 | **Backend Core** | Python, FastAPI, Motor Asíncrono | Toma de decisiones y enrutamiento con latencia inferior a 30ms. |
-| **IA & Cerebro** | Ollama (Local LLM), ML Workers | "Ares", análisis predictivo totalmente *air-gapped* sin conexión externa. |
-| **Ingesta Sensorial**| Protocolo UEE, NATS JetStream | Resiliencia garantizada en zonas de negación electrónica. |
-| **Almacenamiento** | PostGIS & TimescaleDB | Memoria táctico-espacial a prueba de desconexiones. |
+| **IA & Cerebro** | Ollama (Local LLM), YOLOv8 (In-Memory), IsolationForest | Análisis táctico air-gapped y visión artificial sin impacto en I/O. |
+| **Ingesta Sensorial**| Protocolo UEE, NATS JetStream | Resiliencia garantizada en zonas de negación electrónica con control de Poison Pills. |
+| **Seguridad** | mTLS, JWT Estricto, Fail-Safe Env | Criptografía resistente a manipulación, spoofing e inyección volumétrica. |
 
 ---
 
 ## 🚀 Despliegue Rápido (Entorno de Comando)
 
-SESIS sigue operando basado en contenedores para infraestructura *bare-metal* desconectada de la red pública.
+SESIS opera bajo contenedores fortificados. No existen credenciales por defecto; el sistema fallará (Fail-Safe) si no se inyectan mediante el entorno.
 
 ```bash
-# 1. Asegurar el aprovisionamiento de modelos LLM tácticos
+# 1. Configurar variables criptográficas de misión (Requerido)
+cp ./backend/.env.example ./backend/.env
+# Edite .env insertando claves AES, JWT, Postgres y MinIO.
+
+# 2. Asegurar el aprovisionamiento de modelos LLM tácticos
 ./scripts/init_ollama.sh
 
-# 2. Desplegar el stack completo de fusión e interfaz táctica
+# 3. Desplegar el stack completo de fusión e interfaz táctica
 docker-compose up -d --build
 ```
 
 ### Rutas Activas del Centro de Comando:
-- **Dashboard Táctico (React UI)**: `http://localhost (Port 80/3000)`
+- **Dashboard Táctico (React UI)**: `http://localhost:3000`
 - **Ares API / Core**: `http://localhost:8000/docs`
 - **NATS Intelligence Bus**: `Port 4222`
 - **Almacén Táctico (PostgreSQL)**: `Port 5432`
 
 ---
 
-## 🔒 Postura de Seguridad e Inmutabilidad
+## 🔒 Postura de Ciberseguridad (Último Informe SecOps)
 
-Cada evento en la plataforma (movimientos de unidades, alertas procesadas, proyecciones de riesgo generadas por IA) forma parte de una **Matriz de Cripto-Auditoría**. Los *workers* analizan los datos bajo un esquema **Zero-Trust** asegurando que la información de fusión de inteligencia nunca sea manipulada ni corrompida.
+* **Anti-Spoofing C2:** Mitigación de inyecciones de certificados mTLS apócrifos mediante validación topológica de proxies.
+* **Control Volumétrico:** Límite máximo de carga en memoria (10 MB payload) evitando ataques de *Disk/Memory Exhaustion*.
+* **Prevención Mem-Leak:** Recolección de basura asíncrona implementada en la tabla de rate limits del Cerebro Ares, garantizando robustez ante picos de demanda.
+* **Cinemática Avanzada:** El analizador de telemetría geoespacial comprueba *timestamps* precisos para neutralizar tácticas enemigas de simulación de trayectorias (GPS spoofing).
 
 ---
 
-© 2026. Todos los derechos reservados por el Autor. **Clasificación: CONFIDENCIAL MAJESTIC / NOFORN**.
+© 2026. Todos los derechos reservados por el Autor original. **Clasificación: CONFIDENCIAL MAJESTIC / NOFORN**.

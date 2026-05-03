@@ -77,8 +77,14 @@ def _check_rate_limit(operator_id: str, limit: int = 20, window_seconds: int = 6
     """
     now = datetime.datetime.utcnow()
     cutoff = now - datetime.timedelta(seconds=window_seconds)
+    
+    # Limpieza global para evitar memory leak (CWE-400)
+    for k in list(_rate_limit_store.keys()):
+        _rate_limit_store[k] = [ts for ts in _rate_limit_store[k] if ts > cutoff]
+        if not _rate_limit_store[k]:
+            del _rate_limit_store[k]
+
     calls = _rate_limit_store.get(operator_id, [])
-    calls = [ts for ts in calls if ts > cutoff]
     if len(calls) >= limit:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,

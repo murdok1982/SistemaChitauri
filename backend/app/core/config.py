@@ -16,8 +16,8 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # Base de datos
-    DATABASE_URL: str = "postgresql+asyncpg://user:pass@localhost/sesis"
+    # Base de datos (Sin valores por defecto por doctrina militar)
+    DATABASE_URL: str
 
     # NATS
     NATS_URL: str = "nats://localhost:4222"
@@ -26,11 +26,13 @@ class Settings(BaseSettings):
     OLLAMA_URL: str = "http://ollama:11434"
     OLLAMA_MODEL: str = "llama3.2:3b"
 
-    # JWT
-    JWT_SECRET_KEY: str = "change-me-in-production-use-32-plus-bytes"
+    # JWT - REQUIERE variable entorno JWT_SECRET_KEY de 32+ bytes
+    JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
-    JWT_EXPIRE_MINUTES: int = 60
-    JWT_REFRESH_EXPIRE_DAYS: int = 7
+    JWT_EXPIRE_MINUTES: int = 15  # Max 15 min según directrices
+    JWT_REFRESH_EXPIRE_DAYS: int = 7  # Max 7 días
+    MFA_ISSUER: str = "SESIS-CHITAURI"
+    MFA_TOKEN_VALIDITY: int = 300  # 5 min para código MFA
 
     # CORS: acepta string JSON o lista directa
     ALLOWED_ORIGINS: list[str] = ["http://localhost:3000"]
@@ -41,10 +43,10 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    # MinIO / S3
+    # MinIO / S3 (Sin credenciales embebidas)
     MINIO_URL: str = "http://minio:9000"
-    MINIO_ROOT_USER: str = "minioadmin"
-    MINIO_ROOT_PASSWORD: str = "minioadmin"
+    MINIO_ROOT_USER: str
+    MINIO_ROOT_PASSWORD: str
 
     # Clasificación
     CLASSIFICATION_LEVELS: list[str] = [

@@ -1,0 +1,78 @@
+# Grafana Dashboards para SESIS v3.0
+
+## Dashboard: C2 Overview
+apiVersion: 1
+
+providers:
+  - name: 'SESIS Dashboards'
+    orgId: 1
+    folder: 'SESIS'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+
+---
+
+# Dashboard JSON (C2 Overview)
+{
+  "dashboard": {
+    "id": null,
+    "title": "SESIS - C2 Overview",
+    "tags": ["sesis", "c2"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Active Assets",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sesis_assets_active_total",
+            "legendFormat": "Active"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Alerts by Severity",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sesis_alerts_total{severity=\"CRITICAL\"}",
+            "legendFormat": "Critical"
+          },
+          {
+            "expr": "sesis_alerts_total{severity=\"HIGH\"}",
+            "legendFormat": "High"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "API Requests/sec",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[1m])",
+            "legendFormat": "{{method}} {{endpoint}}"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Threat Level",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "sesis_threat_level_score",
+            "legendFormat": "Current"
+          }
+        ]
+      }
+    ]
+  },
+  "folderId": 0
+}

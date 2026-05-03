@@ -1,5 +1,5 @@
 fastapi
-uvicorn
+uvicorn[standard]
 pydantic
 pydantic-settings
 python-jose[cryptography]
@@ -14,3 +14,25 @@ opentelemetry-api
 opentelemetry-sdk
 opentelemetry-instrumentation-fastapi
 prometheus-client
+pyotp
+pyqrcode[pil]
+redis
+cryptography
+geoalchemy2
+numpy
+scikit-learn
+# YOLOv8 para visión por computadora
+ultralytics
+# Isolation Forest para anomalías
+# scikit-learn ya incluido arriba
+# NLP para análisis HUMINT
+transformers
+torch
+# Grafos para correlación
+networkx
+# OpenTelemetry para tracing
+opentelemetry-instrumentation-requests
+opentelemetry-exporter-otlp
+# Utilidades
+python-dotenv
+asyncio
