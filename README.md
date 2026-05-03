@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/Architecture-Event%20Driven-purple?style=for-the-badge&logo=apachekafka" alt="Architecture">
 </p>
 
-![Command Center HUD](C:\Users\USUARIO\.gemini\antigravity\brain\295665f9-bdbf-4f90-a047-52512cd1ac9f\tactical_command_hud_1777830207285.png)
+![Command Center HUD](docs/assets/tactical_hud.png)
 
 ## 🛰️ Visión General y Nuevas Capacidades (Fase de Endurecimiento)
 
