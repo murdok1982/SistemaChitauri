@@ -141,4 +141,18 @@ docker-compose up -d --build
 
 ---
 
+## 📝 Registro de Operaciones y Mantenimiento Evolutivo (Changelog)
+
+* **[Parche Táctico Reciente]**: Ejecución de **correcciones de errores de compilación** y revisión profunda de la arquitectura. Se ha estabilizado el código fuente de los módulos principales (Backend en Python y Frontend React), garantizando el correcto despliegue del sistema sin interrupciones ni fallos de dependencias.
+
+---
+
+## ⚡ Apoyo Logístico y Donaciones
+
+El desarrollo soberano e independiente de **SESIS** demanda considerables recursos. Si deseas apoyar el mantenimiento de esta plataforma estratégica, puedes contribuir:
+
+* **Bitcoin (BTC)**: `bc1q5p2v7qddk2r2k0ygrk7luzr3s8mchfqunn4zup` *(Dirección para soporte del proyecto)*
+
+---
+
 © 2026. Todos los derechos reservados por el Autor original. **Clasificación máxima admisible del prototipo: RESTRICTED / FOUO** (pendiente acreditación ATO para niveles superiores).
