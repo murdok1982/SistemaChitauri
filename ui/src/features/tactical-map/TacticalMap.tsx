@@ -1,11 +1,76 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useSesisStore } from '@/store/sesisStore'
 import { Map, NavigationControl, Marker } from 'react-map-gl'
-import { Shield, MapPin, Radio, Zap } from 'lucide-react'
+import { MapPin } from 'lucide-react'
 import type { Asset } from '@/types/sesis'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || ''
+
+type Affiliation = 'friend' | 'hostile' | 'neutral' | 'unknown'
+
+function getAffiliation(asset: Asset): Affiliation {
+  const raw = asset.metadata?.affiliation
+  if (raw === 'hostile' || raw === 'neutral' || raw === 'unknown' || raw === 'friend') {
+    return raw
+  }
+  return 'friend'
+}
+
+/**
+ * APP-6 mínimo (afiliación por forma+color, WCAG operativo).
+ * No es el set completo APP-6D — solo afiliación.
+ */
+function AffiliationSymbol({ affiliation, size = 18 }: { affiliation: Affiliation; size?: number }) {
+  const stroke = {
+    friend: '#00ffff',
+    hostile: '#ff0000',
+    neutral: '#00ff00',
+    unknown: '#ffff00',
+  }[affiliation]
+  const fill = `${stroke}33` // semitransparente
+  const half = size / 2
+
+  if (affiliation === 'hostile') {
+    // Rombo (rotado 45°)
+    return (
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+        <rect
+          x={half - half * 0.7}
+          y={half - half * 0.7}
+          width={size * 0.7}
+          height={size * 0.7}
+          transform={`rotate(45 ${half} ${half})`}
+          stroke={stroke}
+          strokeWidth={2}
+          fill={fill}
+        />
+      </svg>
+    )
+  }
+  if (affiliation === 'unknown') {
+    return (
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+        <rect x={2} y={2} width={size - 4} height={size - 4} stroke={stroke} strokeWidth={2} fill={fill} />
+        <text x={half} y={half + 4} textAnchor="middle" fontSize={size * 0.7} fill={stroke} fontFamily="monospace" fontWeight="bold">?</text>
+      </svg>
+    )
+  }
+  if (affiliation === 'friend') {
+    // Rectángulo cyan
+    return (
+      <svg width={size} height={size * 0.75} viewBox={`0 0 ${size} ${size * 0.75}`} aria-hidden="true">
+        <rect x={2} y={2} width={size - 4} height={size * 0.75 - 4} stroke={stroke} strokeWidth={2} fill={fill} />
+      </svg>
+    )
+  }
+  // neutral: cuadrado verde
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+      <rect x={2} y={2} width={size - 4} height={size - 4} stroke={stroke} strokeWidth={2} fill={fill} />
+    </svg>
+  )
+}
 
 export function TacticalMap({ fullscreen = false }: { fullscreen?: boolean }) {
   const { assets, selectedAssetId, selectAsset } = useSesisStore()
@@ -23,13 +88,20 @@ export function TacticalMap({ fullscreen = false }: { fullscreen?: boolean }) {
     }
   }
 
+  const getAffiliationStroke = (affiliation: Affiliation): string => ({
+    friend: '#00ffff',
+    hostile: '#ff0000',
+    neutral: '#00ff00',
+    unknown: '#ffff00',
+  }[affiliation])
+
   const getClassificationColor = (level: string) => {
     switch (level) {
-      case 'TOP_SECRET': return '#ff00ff'
+      case 'TOP_SECRET': return '#9400d3'
       case 'SECRET': return '#ff0000'
       case 'CONFIDENTIAL': return '#ff6b35'
-      case 'RESTRICTED': return '#ffff00'
-      default: return '#00ff00'
+      case 'RESTRICTED': return '#ffd700'
+      default: return '#00ff41'
     }
   }
 
@@ -67,30 +139,37 @@ export function TacticalMap({ fullscreen = false }: { fullscreen?: boolean }) {
         >
           <NavigationControl position="top-right" />
 
-          {assets.map((asset) => (
-            <Marker
-              key={asset.id}
-              longitude={asset.location[1]}
-              latitude={asset.location[0]}
-              onClick={(e) => {
-                e.originalEvent.stopPropagation()
-                selectAsset(asset.id)
-              }}
-            >
-              <div
-                className={`cursor-pointer transform hover:scale-125 transition-transform ${
-                  selectedAssetId === asset.id ? 'scale-125' : ''
-                }`}
-                title={`${asset.id} - ${asset.kind}`}
+          {assets.map((asset) => {
+            const affiliation = getAffiliation(asset)
+            return (
+              <Marker
+                key={asset.id}
+                longitude={asset.location[1]}
+                latitude={asset.location[0]}
+                onClick={(e) => {
+                  e.originalEvent.stopPropagation()
+                  selectAsset(asset.id)
+                }}
               >
-                <span className="text-lg">{getAssetIcon(asset.kind)}</span>
                 <div
-                  className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white"
-                  style={{ backgroundColor: getClassificationColor(asset.classification_level) }}
-                />
-              </div>
-            </Marker>
-          ))}
+                  className={`cursor-pointer transform hover:scale-125 transition-transform relative ${
+                    selectedAssetId === asset.id ? 'scale-125' : ''
+                  }`}
+                  title={`${asset.id} - ${asset.kind} (${affiliation})`}
+                  aria-label={`Activo ${asset.id}, ${asset.kind}, afiliación ${affiliation}`}
+                >
+                  <AffiliationSymbol affiliation={affiliation} size={22} />
+                  <span className="absolute inset-0 flex items-center justify-center text-[10px] pointer-events-none">
+                    {getAssetIcon(asset.kind)}
+                  </span>
+                  <div
+                    className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2.5 h-2.5 rounded-full border border-white"
+                    style={{ backgroundColor: getClassificationColor(asset.classification_level) }}
+                  />
+                </div>
+              </Marker>
+            )
+          })}
         </Map>
       ) : (
         /* Fallback SVG Map */
@@ -104,16 +183,37 @@ export function TacticalMap({ fullscreen = false }: { fullscreen?: boolean }) {
               <line key={`v${i}`} x1={i * 30} y1="0" x2={i * 30} y2="300" stroke="#2a3f5a" strokeWidth="0.5" />
             ))}
 
-            {/* Assets */}
+            {/* Assets — APP-6 mínimo (afiliación por forma+color) */}
             {assets.map((asset, idx) => {
               const x = 50 + (idx * 60) % 300
               const y = 50 + (idx * 40) % 200
+              const affiliation = getAffiliation(asset)
+              const stroke = getAffiliationStroke(affiliation)
+              const fillSemi = `${stroke}33`
               return (
                 <g key={asset.id}>
-                  <circle cx={x} cy={y} r="8" fill="#00ff41" opacity="0.8">
-                    <animate attributeName="r" values="8;12;8" dur="2s" repeatCount="indefinite" />
-                  </circle>
-                  <text x={x} y={y + 20} fill="#00ff41" fontSize="8" textAnchor="middle">
+                  {affiliation === 'hostile' ? (
+                    <rect
+                      x={x - 7}
+                      y={y - 7}
+                      width="14"
+                      height="14"
+                      transform={`rotate(45 ${x} ${y})`}
+                      stroke={stroke}
+                      strokeWidth="2"
+                      fill={fillSemi}
+                    />
+                  ) : affiliation === 'friend' ? (
+                    <rect x={x - 9} y={y - 6} width="18" height="12" stroke={stroke} strokeWidth="2" fill={fillSemi} />
+                  ) : affiliation === 'neutral' ? (
+                    <rect x={x - 7} y={y - 7} width="14" height="14" stroke={stroke} strokeWidth="2" fill={fillSemi} />
+                  ) : (
+                    <g>
+                      <rect x={x - 7} y={y - 7} width="14" height="14" stroke={stroke} strokeWidth="2" fill={fillSemi} />
+                      <text x={x} y={y + 4} textAnchor="middle" fontSize="10" fill={stroke} fontWeight="bold">?</text>
+                    </g>
+                  )}
+                  <text x={x} y={y + 22} fill={stroke} fontSize="8" textAnchor="middle">
                     {asset.id.substring(0, 6)}
                   </text>
                 </g>

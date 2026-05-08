@@ -2,13 +2,11 @@ import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Shield, AlertTriangle, Bug, Globe, Plus } from 'lucide-react'
-import { useSesisStore } from '@/store/sesisStore'
 import type { CyberIncident } from '@/types/sesis'
 
 const KILL_CHAIN_STAGES = ['RECON', 'WEAPONIZE', 'DELIVER', 'EXPLOIT', 'INSTALL', 'C2', 'ACTIONS']
 
 export function CyberDashboard() {
-  const { cyberIncidents } = useSesisStore()
   const [incidents] = useState<CyberIncident[]>([
     {
       id: 'cyber-1',

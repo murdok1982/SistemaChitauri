@@ -1,4 +1,4 @@
-import { useState, useEffect, useCalback } from 'react'
+import { useState, useEffect } from 'react'
 import { useWebSocket } from '@/hooks/useWebSocket'
 import { useSesisStore } from '@/store/sesisStore'
 import { Header } from './components/Header'
@@ -8,13 +8,15 @@ import { C2Dashboard } from './features/c2-dashboard/C2Dashboard'
 import { IntelPanel } from './features/intel-panel/IntelPanel'
 import { TacticalMap } from './features/tactical-map/TacticalMap'
 import { AresChat } from './features/ares-chat/AresChat'
+import { LogisticsDashboard } from './features/logistics/LogisticsDashboard'
+import { CyberDashboard } from './features/cyber/CyberDashboard'
 import type { WebSocketMessage, Alert } from '@/types/sesis'
 
 interface AppProps {
   initialTab?: string
 }
 
-function App({ initialTab = 'dashboard' }: AppProps) {
+export function App({ initialTab = 'dashboard' }: AppProps) {
   const [activeTab, setActiveTab] = useState(initialTab)
   const {
     setAlerts,
@@ -26,33 +28,31 @@ function App({ initialTab = 'dashboard' }: AppProps) {
     toggleLiveMode,
   } = useSesisStore()
 
-  const apiUrl = (window as any).SESIS_API_URL || 'http://localhost:8000'
+  const apiUrl = (window as unknown as { SESIS_API_URL?: string }).SESIS_API_URL || 'http://localhost:8000'
 
-  const { isConnected } = useWebSocket({
+  useWebSocket({
     url: `ws://${new URL(apiUrl).host}/ws`,
-    onMessage: (data: WebSocketMessage) => {
-      switch (data.type) {
+    onMessage: (data: unknown) => {
+      const msg = data as WebSocketMessage
+      switch (msg.type) {
         case 'alert':
-          addAlert(data.payload as Alert)
+          addAlert(msg.payload as unknown as Alert)
           break
         case 'threat_change':
-          console.log('Threat level changed:', data.payload)
           break
         case 'system_status':
-          setAresStatus(data.payload.status)
+          setAresStatus((msg.payload as { status: 'CHECKING' | 'ONLINE' | 'OFFLINE' | 'DEGRADED' }).status)
           break
       }
     },
     onOpen: () => {
       setWsConnected(true)
-      console.log('✅ WebSocket conectado')
     },
     onClose: () => {
       setWsConnected(false)
-      console.log('❌ WebSocket desconectado')
     },
-    onError: (error) => {
-      console.error('WebSocket error:', error)
+    onError: () => {
+      // Errores de WS se reflejan en wsConnected; reconexión gestionada por el hook
     },
     reconnectInterval: 3000,
     maxReconnectAttempts: 20,
@@ -75,8 +75,8 @@ function App({ initialTab = 'dashboard' }: AppProps) {
           const status = await aresRes.json()
           setAresStatus(status.status || 'ONLINE')
         }
-      } catch (error) {
-        console.error('Error fetching initial data:', error)
+      } catch {
+        // Backend no disponible: el ticker quedará vacío hasta que llegue WS
       }
     }
 
@@ -121,6 +121,8 @@ function App({ initialTab = 'dashboard' }: AppProps) {
           {activeTab === 'c2' && <C2Dashboard fullscreen />}
           {activeTab === 'intel' && <IntelPanel fullscreen />}
           {activeTab === 'chat' && <AresChat fullscreen />}
+          {activeTab === 'logistics' && <LogisticsDashboard />}
+          {activeTab === 'cyber' && <CyberDashboard />}
         </main>
       </div>
 
@@ -130,4 +132,3 @@ function App({ initialTab = 'dashboard' }: AppProps) {
   )
 }
 
-export default App

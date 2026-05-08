@@ -1,0 +1,53 @@
+# --- Secretos y entornos ---
+.env
+.env.local
+.env.*.local
+backend/.env
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# --- Node / Frontend ---
+node_modules/
+ui/dist/
+ui/build/
+.vite/
+*.tsbuildinfo
+
+# --- Rust ---
+target/
+
+# --- IDE / OS ---
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# --- Claude / herramientas ---
+.claude/
+
+# --- Logs y temporales ---
+*.log
+*.tmp
+
+# --- Datos sensibles operacionales ---
+backups/
+*.dump
+*.sql.gz
+intel_products/
+classified/

@@ -23,7 +23,7 @@ export function AresChat({ fullscreen = false }: { fullscreen?: boolean }) {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const apiUrl = (window as any).SESIS_API_URL || 'http://localhost:8000'
+  const apiUrl = (window as unknown as { SESIS_API_URL?: string }).SESIS_API_URL || 'http://localhost:8000'
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return
@@ -40,7 +40,7 @@ export function AresChat({ fullscreen = false }: { fullscreen?: boolean }) {
 
     try {
       let endpoint = '/v1/brain/query'
-      let body: any = { query: input }
+      let body: Record<string, unknown> = { query: input }
 
       if (mode === 'THREAT') {
         endpoint = '/v1/brain/analyze-threat'

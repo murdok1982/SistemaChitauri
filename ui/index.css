@@ -17,9 +17,9 @@
   --accent-orange:  #ff6b35;
   --accent-blue:    #00a3ff;
   --text-main:      #e0e6ed;
-  --text-dim:       #7a8a9a;
-  --text-mono:      'Courier New', Courier, monospace;
-  --text-ui:        'Segoe UI', system-ui, -apple-system, sans-serif;
+  --text-dim:       #8899a6;
+  --text-mono:      'JetBrains Mono', 'Courier New', Courier, monospace;
+  --text-ui:        'Roboto Condensed', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --border:         1px solid rgba(0, 255, 65, 0.18);
   --border-strong:  1px solid rgba(0, 255, 65, 0.4);
   --glow-green:     0 0 8px rgba(0, 255, 65, 0.5);
@@ -911,6 +911,12 @@ body {
   letter-spacing: 2px;
 }
 
+/* Variante gauge principal IntelPanel — spec exige 32px (2rem) */
+.threat-value--gauge {
+  font-size: 2rem;
+  line-height: 1;
+}
+
 .threat-bar-bg {
   height: 8px;
   background: rgba(255,255,255,0.05);
@@ -1568,5 +1574,16 @@ body {
   }
   .col-right {
     display: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Accesibilidad — WCAG SC 2.3.3 (Animation from Interactions)
+   Respeta prefers-reduced-motion sin romper la estetica tactica
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

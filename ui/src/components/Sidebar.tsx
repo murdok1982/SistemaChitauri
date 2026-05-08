@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useSesisStore } from '@/store/sesisStore'
 import { LayoutDashboard, Radar, Brain, Shield, Truck, Activity } from 'lucide-react'
 
@@ -101,7 +100,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         </div>
         <div className="text-[10px] text-gray-500 font-mono">
           JWT: ACTIVO<br/>
-          mTLS: {import.meta.env.PROD ? 'HABILITADO' : 'DESARROLLO'}
+          mTLS: {wsConnected ? 'PROXY' : 'OFF'}
         </div>
       </div>
     </aside>

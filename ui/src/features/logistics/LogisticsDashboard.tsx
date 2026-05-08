@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Truck, Pill, Fuel, AlertTriangle, Plus } from 'lucide-react'
-import { useSesisStore } from '@/store/sesisStore'
+import { AlertTriangle, Pill } from 'lucide-react'
 import type { LogisticsSupply } from '@/types/sesis'
 
 export function LogisticsDashboard() {
-  const { logisticsSupplies } = useSesisStore()
   const [supplies] = useState<LogisticsSupply[]>([
     { id: '1', item_type: 'AMMO_5_56', quantity: 50000, unit: 'rounds', location_id: 'unit-3', min_threshold: 10000, is_low_stock: false, last_updated: new Date().toISOString() },
     { id: '2', item_type: 'AMMO_7_62', quantity: 30000, unit: 'rounds', location_id: 'unit-3', min_threshold: 5000, is_low_stock: false, last_updated: new Date().toISOString() },

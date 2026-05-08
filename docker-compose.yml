@@ -12,8 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/migrations:/docker-entrypoint-initdb.d
-    ports:
-      - "5432:5432"
+    # Puerto 5432 NO expuesto al host (sólo accesible vía red interna del compose).
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U sis_admin"]
       interval: 10s
@@ -22,8 +21,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
+    # Puerto 6379 NO expuesto al host (sólo accesible vía red interna del compose).
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
@@ -92,6 +90,9 @@ services:
       OLLAMA_URL: http://ollama:11434
       JWT_SECRET_KEY: ${JWT_SECRET_KEY?Error: JWT_SECRET_KEY no definida}
       AES_KEY: ${AES_KEY?Error: AES_KEY no definida}
+      MTLS_CA_CERT: ${MTLS_CA_CERT:-}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER?Error: MINIO_ROOT_USER no definida}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD?Error: MINIO_ROOT_PASSWORD no definida}
       ENVIRONMENT: production
     depends_on:
       postgres:
@@ -147,8 +148,8 @@ services:
     ports:
       - "3001:3000"
     environment:
-      GF_AUTH_ANONYMOUS_ENABLED: "true"
-      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD?Error: GRAFANA_ADMIN_PASSWORD no definida}
       GF_INSTALL_PLUGINS: grafana-piechart-panel
     volumes:
       - grafana_data:/var/lib/grafana

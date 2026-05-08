@@ -14,7 +14,7 @@ class PolicyEvaluator:
         2. Contextual rules (e.g., mission ID match) must pass.
         """
         
-        clearance_levels = {"OPEN": 0, "RESTRICTED": 1, "CONFIDENTIAL": 2, "SECRET": 3}
+        clearance_levels = {"OPEN": 0, "RESTRICTED": 1, "CONFIDENTIAL": 2, "SECRET": 3, "TOP_SECRET": 4}
         
         subject_clearance = clearance_levels.get(subject.get("clearance", "OPEN"), 0)
         resource_classification = clearance_levels.get(resource.get("classification", "OPEN"), 0)

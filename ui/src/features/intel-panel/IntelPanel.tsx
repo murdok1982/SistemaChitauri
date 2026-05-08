@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSesisStore } from '@/store/sesisStore'
-import { BarChart3, Shield, FileText, AlertTriangle, TrendingUp } from 'lucide-react'
+import { BarChart3 } from 'lucide-react'
 import type { IntelProduct, PIR } from '@/types/sesis'
 
 export function IntelPanel({ fullscreen = false }: { fullscreen?: boolean }) {

@@ -1,0 +1,9 @@
+# Dependencias ML pesadas — instalar SOLO en imagen ml-worker / scripts ML.
+# La imagen API (uvicorn) no debe cargar este conjunto.
+# YOLOv8 para visión por computadora
+ultralytics==8.3.27
+# NLP para análisis HUMINT
+transformers==4.45.2
+torch==2.4.1
+# Grafos para correlación
+networkx==3.3

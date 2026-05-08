@@ -1,8 +1,19 @@
 -- SESIS Database Schema Design (v1)
--- Requires PostGIS and TimescaleDB extensions
+-- Requires PostGIS. TimescaleDB es opcional: se intenta crear y se ignora si la imagen
+-- de Postgres no la incluye (la imagen postgis/postgis del compose NO la trae).
+-- Si necesitas hypertables reales, cambia la imagen a timescale/timescaledb-ha:pg14-latest.
 
 CREATE EXTENSION IF NOT EXISTS postgis;
-CREATE EXTENSION IF NOT EXISTS timescaledb;
+
+DO $$
+BEGIN
+    BEGIN
+        CREATE EXTENSION IF NOT EXISTS timescaledb;
+    EXCEPTION WHEN feature_not_supported OR undefined_file THEN
+        RAISE NOTICE 'TimescaleDB no disponible en esta imagen — continuando sin hypertables';
+    END;
+END
+$$;
 
 -- 1. Assets Table (Operational State)
 CREATE TABLE assets (

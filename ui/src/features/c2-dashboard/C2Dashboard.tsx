@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSesisStore } from '@/store/sesisStore'
-import { Activity, BarChart3, AlertTriangle, Shield, Radio, Zap, Truck } from 'lucide-react'
+import { Activity, AlertTriangle, Shield, Radio } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import type { Mission, BlueForceUnit } from '@/types/sesis'
 

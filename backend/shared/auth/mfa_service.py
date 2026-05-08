@@ -2,6 +2,7 @@
 MFA Service - Autenticación multifactor con TOTP (RFC 6238).
 Soporta Google Authenticator, Authy, y estándar nacional.
 """
+import time
 import pyotp
 import pyqrcode
 from io import BytesIO
@@ -38,12 +39,25 @@ class MFAService:
         return base64.b64encode(buffer.getvalue()).decode()
 
     def verify_code(self, user_id: str, code: str) -> bool:
-        """Verifica código TOTP (válido en ventana de 90 segundos)."""
+        """Verifica código TOTP con replay-protection (CRITICAL HIGH)."""
         secret = self.redis.get(f"mfa_secret:{user_id}")
         if not secret:
             return False
         totp = pyotp.TOTP(secret.decode())
-        return totp.verify(code, valid_window=1)
+        # valid_window=0: estrictamente la ventana actual (sin tolerancia hacia atrás/adelante).
+        if not totp.verify(code, valid_window=0):
+            return False
+        # Anti-replay: marcar (user_id, counter_actual) como consumido por 90s.
+        counter = int(time.time() // 30)
+        replay_key = f"mfa:used:{user_id}:{counter}"
+        # SETNX con TTL: si ya estaba consumido, rechazamos.
+        if not self.redis.set(replay_key, "1", ex=90, nx=True):
+            return False
+        return True
+
+    # Alias compat con la doctrina de la auditoría (verify_totp).
+    def verify_totp(self, user_id: str, code: str) -> bool:
+        return self.verify_code(user_id, code)
 
     def enable_mfa(self, user_id: str) -> None:
         """Activa MFA para el usuario (mueve secreto a almacenamiento permanente)."""

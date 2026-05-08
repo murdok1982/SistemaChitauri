@@ -2,6 +2,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from ..models.persistence import Asset, Event, Telemetry, AuditLog
 from typing import Dict, Any
+import datetime
+import hashlib
+import json
 import logging
 
 logger = logging.getLogger("sesis.services.data")
@@ -12,15 +15,40 @@ class DataService:
 
     async def log_audit(self, actor: str, action: str, resource_type: str, resource_id: str, context: Dict[str, Any] = {}):
         """
-        Record an entry in the append-only audit log.
+        Record an entry in the append-only audit log con hash chain (CRITICAL-4).
         """
         try:
+            # Encadenar con la fila previa.
+            prev_q = await self.db.execute(
+                select(AuditLog.row_hash).order_by(AuditLog.id.desc()).limit(1)
+            )
+            prev_hash = prev_q.scalar() or ("0" * 64)
+
+            ts = datetime.datetime.utcnow()
+            canonical = json.dumps(
+                {
+                    "actor": actor,
+                    "action": action,
+                    "resource_type": resource_type,
+                    "resource_id": resource_id,
+                    "context": context,
+                    "ts": ts.isoformat(),
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+                default=str,
+            )
+            row_hash = hashlib.sha256((prev_hash + canonical).encode("utf-8")).hexdigest()
+
             new_log = AuditLog(
+                ts=ts,
                 actor=actor,
                 action=action,
                 resource_type=resource_type,
                 resource_id=resource_id,
-                context=context
+                context=context,
+                prev_hash=prev_hash,
+                row_hash=row_hash,
             )
             self.db.add(new_log)
             # await self.db.commit() # Usually called by the caller or specialized commit

@@ -1,25 +1,39 @@
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from typing import List, Dict, Any
+from typing import List, Optional
+from pydantic import BaseModel, Field
 from ..models.persistence import Asset
 from ..db.session import get_db
+from shared.auth.abac import require_clearance
 
 router = APIRouter()
 
+
+class AssetRegisterIn(BaseModel):
+    """Allowed-fields-only model para evitar mass-assignment."""
+    id: str = Field(..., max_length=128)
+    kind: str = Field(..., max_length=64)
+    classification_level: str = Field(..., max_length=32, pattern=r"^(OPEN|RESTRICTED|CONFIDENTIAL|SECRET|TOP_SECRET)$")
+    metadata: dict = Field(default_factory=dict)
+    location: Optional[List[float]] = None  # Reservado: [lon, lat]; el server decide cómo persistirlo.
+
+
 @router.post("/register")
 async def register_asset(
-    asset_data: Dict[str, Any] = Body(...),
-    db: AsyncSession = Depends(get_db)
+    payload: AssetRegisterIn,
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("RESTRICTED")),
 ):
     """
     Register a new asset in the system.
+    Sólo se aceptan campos del modelo Pydantic; current_status/last_heartbeat/created_at los pone el servidor.
     """
     new_asset = Asset(
-        id=asset_data["id"],
-        kind=asset_data["kind"],
-        classification_level=asset_data["classification_level"],
-        metadata_json=asset_data.get("metadata", {}),
+        id=payload.id,
+        kind=payload.kind,
+        classification_level=payload.classification_level,
+        metadata_json=payload.metadata,
         current_status="registered"
     )
     db.add(new_asset)
@@ -28,8 +42,9 @@ async def register_asset(
 
 @router.get("/{id}")
 async def get_asset(
-    id: String,
-    db: AsyncSession = Depends(get_db)
+    id: str,
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("RESTRICTED")),
 ):
     """
     Get current state of an asset.
@@ -42,7 +57,8 @@ async def get_asset(
 
 @router.get("/")
 async def list_assets(
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("RESTRICTED")),
 ):
     """
     List all registered assets.

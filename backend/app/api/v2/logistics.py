@@ -2,6 +2,7 @@
 Logistics API v2.
 Cadena de suministro, munición, personal, MEDEVAC.
 """
+from enum import Enum
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
@@ -9,9 +10,12 @@ from typing import Optional, List
 from datetime import datetime
 import uuid
 
+from pydantic import BaseModel, Field
+
 from app.db.session import async_session_factory
 from app.models.persistence import LogisticsSupply, EventStore, ORBATUnit
 from app.core.config import settings
+from shared.auth.abac import require_clearance
 
 router = APIRouter()
 
@@ -21,25 +25,47 @@ async def get_db():
         yield session
 
 
+class SupplyIn(BaseModel):
+    item_type: str = Field(..., max_length=64, pattern=r"^[A-Z0-9_]+$")
+    quantity: float = Field(..., ge=0.0)
+    unit: str = Field(..., max_length=32, pattern=r"^[A-Za-z_]+$")
+    location_id: Optional[str] = Field(None, max_length=64)
+    min_threshold: Optional[float] = Field(None, ge=0.0)
+    classification: str = Field("CONFIDENTIAL", max_length=32, pattern=r"^(OPEN|RESTRICTED|CONFIDENTIAL|SECRET|TOP_SECRET)$")
+
+
+class ConsumeIn(BaseModel):
+    quantity: float = Field(..., gt=0.0)
+
+
+class MedevacPriority(str, Enum):
+    T1 = "T1"
+    T2 = "T2"
+    T3 = "T3"
+
+
+class MedevacIn(BaseModel):
+    unit_id: str = Field(..., max_length=64)
+    priority: MedevacPriority
+    casualties: int = Field(..., ge=1, le=1000)
+    location_desc: Optional[str] = Field(None, max_length=200)
+
+
 @router.post("/supplies", tags=["Logistics / Supplies"])
 async def add_supply(
-    item_type: str,  # AMMO_5_56, AMMO_7_62, FUEL, MEDICINE, FOOD
-    quantity: float,
-    unit: str,  # rounds, liters, boxes, kg
-    location_id: Optional[str] = None,
-    min_threshold: Optional[float] = None,
-    classification: str = "CONFIDENTIAL",
-    db: AsyncSession = Depends(get_db)
+    payload: SupplyIn,
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("CONFIDENTIAL")),
 ):
     """Agrega suministros al inventario."""
     supply = LogisticsSupply(
         id=str(uuid.uuid4()),
-        item_type=item_type,
-        quantity=quantity,
-        unit=unit,
-        location_id=location_id,
-        min_threshold=min_threshold,
-        classification_level=classification,
+        item_type=payload.item_type,
+        quantity=payload.quantity,
+        unit=payload.unit,
+        location_id=payload.location_id,
+        min_threshold=payload.min_threshold,
+        classification_level=payload.classification,
         last_updated=datetime.utcnow()
     )
     db.add(supply)
@@ -48,7 +74,7 @@ async def add_supply(
         aggregate_id=supply.id,
         aggregate_type="LogisticsSupply",
         event_type="SUPPLY_ADDED",
-        payload={"type": item_type, "qty": quantity, "unit": unit}
+        payload={"type": payload.item_type, "qty": payload.quantity, "unit": payload.unit}
     )
     db.add(event)
 
@@ -61,7 +87,8 @@ async def list_supplies(
     item_type: Optional[str] = None,
     location_id: Optional[str] = None,
     low_stock: Optional[bool] = None,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("CONFIDENTIAL")),
 ):
     """Lista suministros. low_stock=true muestra solo por debajo del umbral."""
     query = select(LogisticsSupply)
@@ -95,8 +122,9 @@ async def list_supplies(
 @router.put("/supplies/{supply_id}/consume", tags=["Logistics / Supplies"])
 async def consume_supply(
     supply_id: str,
-    quantity: float,
-    db: AsyncSession = Depends(get_db)
+    payload: ConsumeIn,
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("CONFIDENTIAL")),
 ):
     """Consume suministros (ej: munición disparada)."""
     result = await db.execute(select(LogisticsSupply).where(LogisticsSupply.id == supply_id))
@@ -105,17 +133,17 @@ async def consume_supply(
     if not supply:
         raise HTTPException(status_code=404, detail="Suministro no encontrado")
 
-    if supply.quantity < quantity:
+    if supply.quantity < payload.quantity:
         raise HTTPException(status_code=400, detail="Cantidad insuficiente")
 
-    supply.quantity -= quantity
+    supply.quantity -= payload.quantity
     supply.last_updated = datetime.utcnow()
 
     event = EventStore(
         aggregate_id=supply_id,
         aggregate_type="LogisticsSupply",
         event_type="SUPPLY_CONSUMED",
-        payload={"qty_consumed": quantity, "remaining": supply.quantity}
+        payload={"qty_consumed": payload.quantity, "remaining": supply.quantity}
     )
     db.add(event)
 
@@ -128,7 +156,10 @@ async def consume_supply(
 
 
 @router.get("/personnel", tags=["Logistics / Personnel"])
-async def get_personnel_status(db: AsyncSession = Depends(get_db)):
+async def get_personnel_status(
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("CONFIDENTIAL")),
+):
     """Obtiene estado de personal por unidad (OPDIS)."""
     result = await db.execute(select(ORBATUnit).where(ORBATUnit.unit_type.in_(["tierra", "mar", "aire"])))
     units = result.scalars().all()
@@ -151,11 +182,9 @@ async def get_personnel_status(db: AsyncSession = Depends(get_db)):
 
 @router.post("/medevac", tags=["Logistics / Medical"])
 async def request_medevac(
-    unit_id: str,
-    priority: str,  # T1 (immediate), T2 (urgent), T3 (routine)
-    casualties: int,
-    location_desc: Optional[str] = None,
-    db: AsyncSession = Depends(get_db)
+    payload: MedevacIn,
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("CONFIDENTIAL")),
 ):
     """Solicita evacuación médica (MEDEVAC)."""
     medevac_id = str(uuid.uuid4())
@@ -165,10 +194,10 @@ async def request_medevac(
         aggregate_type="Medevac",
         event_type="MEDEVAC_REQUESTED",
         payload={
-            "unit_id": unit_id,
-            "priority": priority,
-            "casualties": casualties,
-            "location": location_desc
+            "unit_id": payload.unit_id,
+            "priority": payload.priority.value,
+            "casualties": payload.casualties,
+            "location": payload.location_desc
         },
         actor="medical_officer"
     )
@@ -177,7 +206,7 @@ async def request_medevac(
     await db.commit()
     return {
         "medevac_id": medevac_id,
-        "priority": priority,
+        "priority": payload.priority.value,
         "status": "requested",
-        "estimated_arrival": "15-45 minutes" if priority == "T1" else "1-3 hours"
+        "estimated_arrival": "15-45 minutes" if payload.priority == MedevacPriority.T1 else "1-3 hours"
     }

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useSesisStore } from '@/store/sesisStore'
 import type { Alert } from '@/types/sesis'
 
@@ -24,6 +24,13 @@ export function AlertTicker() {
     LOW: '[LOW]',
   }
 
+  const severityGlyph = {
+    CRITICAL: '⚠',
+    HIGH: '▲',
+    MEDIUM: '●',
+    LOW: '◦',
+  }
+
   return (
     <div className="h-9 bg-military-panel border-t border-military-border flex items-center overflow-hidden">
       <div className="flex items-center gap-2 px-3 text-xs font-mono text-gray-400 border-r border-military-border h-full">
@@ -33,7 +40,12 @@ export function AlertTicker() {
         </span>
       </div>
 
-      <div className="flex-1 overflow-hidden relative">
+      <div
+        className="flex-1 overflow-hidden relative"
+        role="log"
+        aria-live="polite"
+        aria-label="Feed de alertas tácticas"
+      >
         <div className="ticker-scroll flex items-center gap-6 whitespace-nowrap px-4">
           {displayAlerts.length === 0 ? (
             <span className="text-xs text-gray-500">No hay alertas activas</span>
@@ -46,6 +58,7 @@ export function AlertTicker() {
                     severityColors[alert.severity] || 'text-gray-400'
                   }`}
                 >
+                  <span aria-hidden="true">{severityGlyph[alert.severity] || '·'}</span>
                   <span>[{new Date(alert.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}]</span>
                   <span>{severityPrefix[alert.severity] || '[---]'}</span>
                   <span>{alert.description}</span>
@@ -63,6 +76,7 @@ export function AlertTicker() {
                   }`}
                   aria-hidden="true"
                 >
+                  <span>{severityGlyph[alert.severity] || '·'}</span>
                   <span>[{new Date(alert.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}]</span>
                   <span>{severityPrefix[alert.severity] || '[---]'}</span>
                   <span>{alert.description}</span>

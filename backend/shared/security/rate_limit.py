@@ -7,7 +7,7 @@ import hashlib
 from fastapi import Request, HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from redis import Redis
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Callable
 import logging
 
 logger = logging.getLogger("sesis.security.ratelimit")

@@ -1,6 +1,8 @@
 # 🛡️ SESIS: Sistema de Inteligencia y Conciencia Situacional Soberana
 
-> **⚠️ AVISO LEGAL CRÍTICO:** Este software es **PROPIEDAD PRIVADA EXCLUSIVA**. Desarrollado específicamente para Fuerzas Armadas y Agencias de Inteligencia de grado Estatal. Su clonación, difusión, ingeniería inversa o uso no autorizado será perseguido mediante **ACCIONES JUDICIALES PENALES Y CIVILES** bajo las leyes de propiedad intelectual y seguridad nacional. Clasificación: **TOP SECRET / NOFORN**.
+> **⚠️ AVISO LEGAL:** Este software es **PROPIEDAD PRIVADA EXCLUSIVA**. Desarrollado para Fuerzas Armadas y Agencias de Inteligencia. Su clonación, difusión, ingeniería inversa o uso no autorizado será perseguido bajo las leyes de propiedad intelectual y seguridad nacional.
+>
+> **Clasificación máxima admisible del prototipo actual: `RESTRICTED / FOR OFFICIAL USE ONLY (FOUO)`.** El sistema **NO** está acreditado para operar con datos `CONFIDENTIAL`, `SECRET` ni `TOP SECRET / NOFORN` hasta que se cierren los controles NIST SP 800‑53 (AC‑3, AU‑9, AU‑10, IA‑5, SC‑12, SI‑7) actualmente pendientes (verificación JWS, integración HSM/PKCS#11, mTLS asimétrico extremo‑a‑extremo, accreditation/ATO formal).
 
 ---
 
@@ -139,4 +141,4 @@ docker-compose up -d --build
 
 ---
 
-© 2026. Todos los derechos reservados por el Autor original. **Clasificación: CONFIDENCIAL MAJESTIC / NOFORN**.
+© 2026. Todos los derechos reservados por el Autor original. **Clasificación máxima admisible del prototipo: RESTRICTED / FOUO** (pendiente acreditación ATO para niveles superiores).

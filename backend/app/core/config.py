@@ -56,6 +56,13 @@ class Settings(BaseSettings):
     # JWS public key para verificar firmas de eventos (PEM)
     JWS_PUBLIC_KEY: Optional[str] = None
 
+    # mTLS configuration
+    MTLS_CA_CERT: Optional[str] = None
+
+    # AES-256 key for column-level encryption (hex, 64 chars = 32 bytes)
+    # Required if any model with EncryptedField is instantiated.
+    AES_KEY: str = "0" * 64  # development default — MUST be overridden in production
+
     # Entorno
     ENVIRONMENT: str = "development"
     LOG_LEVEL: str = "INFO"
@@ -89,6 +96,21 @@ class Settings(BaseSettings):
             return json.loads(self.OPERATOR_API_KEYS)
         except (json.JSONDecodeError, TypeError):
             return {}
+
+    @model_validator(mode="after")
+    def _enforce_production_security(self):
+        """Fail-safe: bloquea defaults inseguros si ENVIRONMENT=production."""
+        if self.ENVIRONMENT == "production":
+            if self.AES_KEY == "0" * 64 or "CHANGE_ME" in self.AES_KEY:
+                raise ValueError("AES_KEY default/placeholder es inadmisible en producción")
+            if len(self.JWT_SECRET_KEY) < 32 or "CHANGE_ME" in self.JWT_SECRET_KEY:
+                raise ValueError("JWT_SECRET_KEY débil/placeholder en producción (≥32 bytes y sin CHANGE_ME)")
+            if any(o == "*" or "localhost" in o for o in self.ALLOWED_ORIGINS):
+                raise ValueError("ALLOWED_ORIGINS contiene '*' o 'localhost' en producción")
+            if self.JWT_ALGORITHM == "HS256":
+                # Para clasificación SECRET+: NIST SP 800-57 / CNSSP-15 exige asimétrico con HSM
+                raise ValueError("HS256 prohibido en producción militar; usar RS256/ES256/EdDSA con HSM")
+        return self
 
 
 settings = Settings()

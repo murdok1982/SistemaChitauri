@@ -2,6 +2,7 @@
 Border & Maritime Control API v2.
 Control fronterizo, ADIZ (Air Defense ID Zone), dominio marítimo.
 """
+from enum import Enum
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -9,9 +10,12 @@ from typing import Optional, List
 from datetime import datetime
 import uuid
 
+from pydantic import BaseModel, Field
+
 from app.db.session import async_session_factory
 from app.models.persistence import EventStore, Asset
 from app.core.config import settings
+from shared.auth.abac import require_clearance
 
 router = APIRouter()
 
@@ -21,40 +25,74 @@ async def get_db():
         yield session
 
 
+class PerimeterEventType(str, Enum):
+    INTRUSION = "INTRUSION"
+    MOVEMENT = "MOVEMENT"
+    BREACH = "BREACH"
+
+
+class Severity(str, Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
+
+
+class PerimeterSensorIn(BaseModel):
+    sensor_id: str = Field(..., max_length=64)
+    event_type: PerimeterEventType
+    lat: float = Field(..., ge=-90.0, le=90.0)
+    lon: float = Field(..., ge=-180.0, le=180.0)
+    severity: Severity = Severity.MEDIUM
+    classification: str = Field("CONFIDENTIAL", max_length=32, pattern=r"^(OPEN|RESTRICTED|CONFIDENTIAL|SECRET|TOP_SECRET)$")
+
+
+class ADIZIn(BaseModel):
+    aircraft_id: str = Field(..., max_length=64)
+    lat: float = Field(..., ge=-90.0, le=90.0)
+    lon: float = Field(..., ge=-180.0, le=180.0)
+    altitude: float
+    speed: float = Field(..., ge=0.0)
+    heading: float = Field(..., ge=0.0, le=360.0)
+    classification: str = Field("SECRET", max_length=32, pattern=r"^(OPEN|RESTRICTED|CONFIDENTIAL|SECRET|TOP_SECRET)$")
+
+
+class InterdictionIn(BaseModel):
+    vessel_mmsi: str = Field(..., max_length=32, pattern=r"^[0-9]+$")
+    reason: str = Field(..., max_length=64, pattern=r"^[A-Z_]+$")
+    classification: str = Field("SECRET", max_length=32, pattern=r"^(OPEN|RESTRICTED|CONFIDENTIAL|SECRET|TOP_SECRET)$")
+
+
 @router.post("/perimeter-sensor", tags=["Border / Sensors"])
 async def report_perimeter_event(
-    sensor_id: str,
-    event_type: str,  # INTRUSION, MOVEMENT, BREACH
-    lat: float,
-    lon: float,
-    severity: str = "MEDIUM",
-    classification: str = "CONFIDENTIAL",
-    db: AsyncSession = Depends(get_db)
+    payload: PerimeterSensorIn,
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("CONFIDENTIAL")),
 ):
     """Reporte de sensor perimetral fronterizo."""
-    from geoalchemy2.elements import WKTElement
-    position = WKTElement(f"POINT({lon} {lat})", srid=4326)
-
     event_id = str(uuid.uuid4())
     event = EventStore(
         aggregate_id=event_id,
         aggregate_type="BorderSensor",
         event_type="PERIMETER_ALERT",
         payload={
-            "sensor_id": sensor_id,
-            "event_type": event_type,
-            "position": f"{lat},{lon}",
-            "severity": severity
+            "sensor_id": payload.sensor_id,
+            "event_type": payload.event_type.value,
+            "position": f"{payload.lat},{payload.lon}",
+            "severity": payload.severity.value
         }
     )
     db.add(event)
 
     await db.commit()
-    return {"event_id": event_id, "status": "recorded", "classification": classification}
+    return {"event_id": event_id, "status": "recorded", "classification": payload.classification}
 
 
 @router.get("/perimeter-status", tags=["Border / Status"])
-async def get_perimeter_status(db: AsyncSession = Depends(get_db)):
+async def get_perimeter_status(
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("CONFIDENTIAL")),
+):
     """Estado del perímetro fronterizo."""
     # TODO: Conectar con sensores reales
     return {
@@ -72,14 +110,9 @@ async def get_perimeter_status(db: AsyncSession = Depends(get_db)):
 
 @router.post("/adiz-violation", tags=["Border / ADIZ"])
 async def report_adiz_violation(
-    aircraft_id: str,
-    lat: float,
-    lon: float,
-    altitude: float,
-    speed: float,
-    heading: float,
-    classification: str = "SECRET",
-    db: AsyncSession = Depends(get_db)
+    payload: ADIZIn,
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("CONFIDENTIAL")),
 ):
     """Reporte de violación de ADIZ (Air Defense Identification Zone)."""
     event_id = str(uuid.uuid4())
@@ -89,10 +122,10 @@ async def report_adiz_violation(
         aggregate_type="ADIZ",
         event_type="ADIZ_VIOLATION",
         payload={
-            "aircraft_id": aircraft_id,
-            "position": f"{lat},{lon},{altitude}",
-            "speed": speed,
-            "heading": heading,
+            "aircraft_id": payload.aircraft_id,
+            "position": f"{payload.lat},{payload.lon},{payload.altitude}",
+            "speed": payload.speed,
+            "heading": payload.heading,
             "violation_type": "UNAUTHORIZED_ENTRY"
         }
     )
@@ -103,14 +136,15 @@ async def report_adiz_violation(
         "event_id": event_id,
         "status": "violation_recorded",
         "response": "INTERCEPTOR_DISPATCHED",
-        "classification": classification
+        "classification": payload.classification
     }
 
 
 @router.get("/maritime-tracks", tags=["Maritime / AIS"])
 async def get_maritime_tracks(
     zone: Optional[str] = None,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("CONFIDENTIAL")),
 ):
     """Obtiene tracks marítimos (AIS) en zona económica exclusiva."""
     # TODO: Integrar con AIS real
@@ -143,10 +177,9 @@ async def get_maritime_tracks(
 
 @router.post("/maritime-interdiction", tags=["Maritime / Operations"])
 async def initiate_maritime_interdiction(
-    vessel_mmsi: str,
-    reason: str,  # SMUGGLING, TRESPASS, SUSPICIOUS
-    classification: str = "SECRET",
-    db: AsyncSession = Depends(get_db)
+    payload: InterdictionIn,
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("CONFIDENTIAL")),
 ):
     """Inicia interdicción marítima."""
     interdiction_id = str(uuid.uuid4())
@@ -156,8 +189,8 @@ async def initiate_maritime_interdiction(
         aggregate_type="MaritimeInterdiction",
         event_type="INTERDICTION_STARTED",
         payload={
-            "vessel_mmsi": vessel_mmsi,
-            "reason": reason,
+            "vessel_mmsi": payload.vessel_mmsi,
+            "reason": payload.reason,
             "force_used": "MINIMAL"
         }
     )
@@ -168,5 +201,5 @@ async def initiate_maritime_interdiction(
         "interdiction_id": interdiction_id,
         "status": "initiated",
         "response_units": ["COAST_GUARD_PATROL_1", "NAVAL_UNIT_3"],
-        "classification": classification
+        "classification": payload.classification
     }

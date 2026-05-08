@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSesisStore } from '@/store/sesisStore'
-import { Clock, Wifi, WifiOff, Activity, Shield, AlertTriangle } from 'lucide-react'
+import { Clock, Wifi, WifiOff, Activity, Shield, AlertTriangle, Moon } from 'lucide-react'
 
 export function Header({ wsConnected, liveMode, onToggleLiveMode }: {
   wsConnected: boolean
@@ -8,12 +8,25 @@ export function Header({ wsConnected, liveMode, onToggleLiveMode }: {
   onToggleLiveMode: () => void
 }) {
   const [utcTime, setUtcTime] = useState(new Date())
+  const [nvgEnabled, setNvgEnabled] = useState(false)
   const { threatLevel, aresStatus } = useSesisStore()
 
   useEffect(() => {
     const timer = setInterval(() => setUtcTime(new Date()), 1000)
     return () => clearInterval(timer)
   }, [])
+
+  const toggleNvg = () => {
+    setNvgEnabled((prev) => {
+      const next = !prev
+      if (next) {
+        document.documentElement.dataset.theme = 'night-vision'
+      } else {
+        delete document.documentElement.dataset.theme
+      }
+      return next
+    })
+  }
 
   const threatColors = {
     'BAJO': 'bg-green-500',
@@ -72,6 +85,21 @@ export function Header({ wsConnected, liveMode, onToggleLiveMode }: {
         >
           <span className={`w-2 h-2 rounded-full ${liveMode ? 'bg-military-green animate-pulse' : 'bg-gray-500'}`} />
           LIVE
+        </button>
+
+        {/* NVG (Night-Vision) Toggle */}
+        <button
+          onClick={toggleNvg}
+          aria-pressed={nvgEnabled}
+          aria-label="Modo visión nocturna"
+          className={`px-3 py-1 rounded text-xs font-mono flex items-center gap-1 transition-colors ${
+            nvgEnabled
+              ? 'bg-military-green/20 text-military-green border border-military-green/50'
+              : 'bg-gray-700 text-gray-400 border border-gray-600'
+          }`}
+        >
+          <Moon className="w-3 h-3" />
+          NVG
         </button>
 
         {/* WebSocket Status */}

@@ -125,6 +125,9 @@ class AuditLog(Base):
     resource_type = Column(String, nullable=False)
     resource_id = Column(String, nullable=False)
     context = Column(JSON, default={})
+    # Hash chain (CRITICAL-4): cada fila enlaza con la anterior vía sha256(prev_hash || canonical).
+    prev_hash = Column(String(64), nullable=False, default="0" * 64)
+    row_hash = Column(String(64), nullable=False, default="")
 
 
 class IntelligenceProduct(Base):
