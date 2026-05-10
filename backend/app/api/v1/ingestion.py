@@ -6,6 +6,7 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..services.data_service import DataService
 from ..db.session import get_db
+from shared.auth.abac import require_clearance
 
 router = APIRouter()
 logger = logging.getLogger("sesis.ingest")
@@ -13,7 +14,8 @@ logger = logging.getLogger("sesis.ingest")
 @router.post("/events/ingest")
 async def ingest_event(
     event: Dict[str, Any] = Body(...),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("RESTRICTED")),
 ):
     """
     Ingest a Universal Event Envelope (UEE) message.

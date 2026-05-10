@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, Depends
 from ..services.policy import PolicyEvaluator
 from typing import Dict, Any
+from shared.auth.abac import require_clearance
 
 router = APIRouter()
 
 @router.post("/evaluate")
 async def evaluate_policy(
-    input_data: Dict[str, Any] = Body(...)
+    input_data: Dict[str, Any] = Body(...),
+    principal: dict = Depends(require_clearance("CONFIDENTIAL")),
 ):
     """
     Evaluate an ABAC policy request.

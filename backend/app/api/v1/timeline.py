@@ -4,6 +4,7 @@ from sqlalchemy import select, desc
 from typing import List, Optional
 from ..models.persistence import Telemetry
 from ..db.session import get_db
+from shared.auth.abac import require_clearance
 
 router = APIRouter()
 
@@ -12,7 +13,8 @@ async def query_timeline(
     asset_id: str,
     parameter: Optional[str] = None,
     limit: int = 100,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("RESTRICTED")),
 ):
     """
     Query time-series telemetry data for a specific asset.

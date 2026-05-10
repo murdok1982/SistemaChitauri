@@ -4,6 +4,7 @@ from sqlalchemy import select, desc
 from typing import List, Optional
 from ..models.persistence import Alert
 from ..db.session import get_db
+from shared.auth.abac import require_clearance
 
 router = APIRouter()
 
@@ -11,7 +12,8 @@ router = APIRouter()
 async def list_alerts(
     severity: Optional[str] = None,
     limit: int = 50,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("RESTRICTED")),
 ):
     """
     List recent security alerts and anomalies.
@@ -27,7 +29,8 @@ async def list_alerts(
 async def validate_alert(
     alert_id: str,
     validated_by: str = Query(...),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    principal: dict = Depends(require_clearance("CONFIDENTIAL")),
 ):
     """
     Human-in-the-loop validation for critical alerts.

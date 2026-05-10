@@ -1,12 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 import uuid
+from shared.auth.abac import require_clearance
 
 router = APIRouter()
 
 @router.post("/upload")
 async def request_upload_url(
     filename: str,
-    content_type: str
+    content_type: str,
+    principal: dict = Depends(require_clearance("RESTRICTED")),
 ):
     """
     Request a pre-signed URL for S3/MinIO upload.
