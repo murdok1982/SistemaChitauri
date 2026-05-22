@@ -2,6 +2,13 @@
 SESIS v3.0 — Sistema Estatal de Control de Fuerzas Armadas
 Main entry point con seguridad militar endurecida.
 """
+import sys
+from pathlib import Path
+
+_backend_root = Path(__file__).parent.parent
+if str(_backend_root) not in sys.path:
+    sys.path.insert(0, str(_backend_root))
+
 import logging
 import time
 from contextlib import asynccontextmanager
@@ -256,17 +263,23 @@ app.include_router(sensors.router, prefix="/v1/sensors", tags=["Sensors"])
 
 # ── Routers — v2 Expanded (FASE 2+) ──────────────────────────────────
 
-try:
-    from app.api.v2 import c2, ew, cyber, logistics, border, space  # noqa: E402
-    app.include_router(c2.router, prefix="/v2/c2", tags=["C2 — Command & Control"])
-    app.include_router(ew.router, prefix="/v2/ew", tags=["EW — Electronic Warfare"])
-    app.include_router(cyber.router, prefix="/v2/cyber", tags=["Cyber Operations"])
-    app.include_router(logistics.router, prefix="/v2/logistics", tags=["Logistics"])
-    app.include_router(border.router, prefix="/v2/border", tags=["Border Control"])
-    app.include_router(space.router, prefix="/v2/space", tags=["Space Domain"])
-    logger.info("Módulos v2 (C2, EW, Cyber, Logistics, Border, Space) cargados")
-except ImportError as e:
-    logger.info("Módulos v2 no disponibles aún: %s", e)
+from app.api.v2 import c2, ew, cyber, logistics, border, space  # noqa: E402
+
+app.include_router(c2.router, prefix="/api/v2/c2", tags=["v2", "C2 — Command & Control"])
+app.include_router(ew.router, prefix="/api/v2/ew", tags=["v2", "EW — Electronic Warfare"])
+app.include_router(cyber.router, prefix="/api/v2/cyber", tags=["v2", "Cyber Operations"])
+app.include_router(logistics.router, prefix="/api/v2/logistics", tags=["v2", "Logistics"])
+app.include_router(border.router, prefix="/api/v2/border", tags=["v2", "Border Control"])
+app.include_router(space.router, prefix="/api/v2/space", tags=["v2", "Space Domain"])
+
+app.include_router(c2.router, prefix="/v2/c2", tags=["legacy-v2", "C2 — Command & Control"])
+app.include_router(ew.router, prefix="/v2/ew", tags=["legacy-v2", "EW — Electronic Warfare"])
+app.include_router(cyber.router, prefix="/v2/cyber", tags=["legacy-v2", "Cyber Operations"])
+app.include_router(logistics.router, prefix="/v2/logistics", tags=["legacy-v2", "Logistics"])
+app.include_router(border.router, prefix="/v2/border", tags=["legacy-v2", "Border Control"])
+app.include_router(space.router, prefix="/v2/space", tags=["legacy-v2", "Space Domain"])
+
+logger.info("Módulos v2 (C2, EW, Cyber, Logistics, Border, Space) cargados en /api/v2 y /v2")
 
 
 logger.info(
