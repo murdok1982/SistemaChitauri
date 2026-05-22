@@ -22,10 +22,10 @@ def require_clearance(min_level: str):
 
     async def dep(request: Request) -> dict:
         principal = getattr(request.state, "principal", None)
-        if not principal:
+        if principal is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="no auth principal",
+                detail="Authentication required: JWT token missing, invalid, or expired",
             )
         subj = CLEARANCE_ORDER.get(principal.get("clearance", "OPEN"), 0)
         need = CLEARANCE_ORDER.get(min_level, 0)
