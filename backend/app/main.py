@@ -1,4 +1,5 @@
 """
+import hispan_shield_guardian  # noqa: F401
 SESIS v3.0 — Sistema Estatal de Control de Fuerzas Armadas
 Main entry point con seguridad militar endurecida.
 """
